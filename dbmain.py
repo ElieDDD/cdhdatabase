@@ -56,30 +56,17 @@ def query_data(filters):
         st.error(f"Error querying data: {str(e)}")
         return pd.DataFrame()  # return empty dataframe on error
 
-# Delete an entry from the database
-def delete_entry(entry_id):
-    try:
-        conn = sqlite3.connect("university_data.db")
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM university_data WHERE id = ?", (entry_id,))
-        conn.commit()
-
-        # Check if the deletion was successful
-        if cursor.rowcount == 0:
-            st.error(f"No record found with ID {entry_id}")
-            conn.close()
-            return False
-        conn.close()
-        return True
-    except Exception as e:
-        st.error(f"Error deleting record: {str(e)}")
-        return False
-
 # Run a custom SQL query
 def run_sql_query(query):
     try:
         conn = sqlite3.connect("university_data.db")
-        df = pd.read_sql_query(query, conn)
+        # Return the result as a pandas DataFrame
+        if query.strip().lower().startswith('select'):
+            df = pd.read_sql_query(query, conn)
+        else:
+            conn.execute(query)
+            conn.commit()
+            df = pd.DataFrame()  # For non-SELECT queries, no result set is returned
         conn.close()
         return df
     except Exception as e:
@@ -141,7 +128,7 @@ def main():
     with tab3:
         st.header("Run Custom SQL Query")
         query = st.text_area("Enter SQL Query (e.g., SELECT * FROM university_data)")
-        
+
         if st.button("Run Query"):
             if query.strip():
                 result_df = run_sql_query(query)
@@ -152,5 +139,4 @@ def main():
             else:
                 st.error("Please enter a SQL query.")
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__ma
