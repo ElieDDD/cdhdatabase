@@ -53,7 +53,14 @@ def delete_entry(entry_id):
     cursor = conn.cursor()
     cursor.execute("DELETE FROM university_data WHERE id = ?", (entry_id,))
     conn.commit()
+    
+    # Check if the deletion was successful
+    if cursor.rowcount == 0:
+        st.error(f"No record found with ID {entry_id}")
+        conn.close()
+        return False
     conn.close()
+    return True
 
 # Main app
 def main():
@@ -103,10 +110,11 @@ def main():
                 # Let the user select a record by ID for deletion
                 selected_id = st.selectbox("Select the ID of the record to delete", result_df['id'].tolist())
                 
-                # Confirm before deletion
-                if st.button(f"Delete Record with ID {selected_id}"):
-                    delete_entry(selected_id)
-                    st.success(f"Record with ID {selected_id} has been deleted.")
+                # Show the delete button only when an ID is selected
+                if selected_id and st.button(f"Delete Record with ID {selected_id}"):
+                    st.write(f"Attempting to delete record with ID: {selected_id}")
+                    if delete_entry(selected_id):
+                        st.success(f"Record with ID {selected_id} has been deleted.")
             else:
                 st.write("No records found.")
 
