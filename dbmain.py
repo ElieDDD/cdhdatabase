@@ -6,7 +6,7 @@ import pandas as pd
 def init_db():
     conn = sqlite3.connect("university_data.db")
     cursor = conn.cursor()
-    cursor.execute('''
+    cursor.execute(''' 
         CREATE TABLE IF NOT EXISTS university_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             university TEXT,
@@ -23,7 +23,7 @@ def init_db():
 def insert_data(university, duration, fee, themes, comments):
     conn = sqlite3.connect("university_data.db")
     cursor = conn.cursor()
-    cursor.execute('''
+    cursor.execute(''' 
         INSERT INTO university_data (university, duration, fee, themes, comments)
         VALUES (?, ?, ?, ?, ?)
     ''', (university, duration, fee, themes, comments))
@@ -100,9 +100,11 @@ def main():
             if not result_df.empty:
                 st.dataframe(result_df)
 
-                # Allow deletion of records
-                selected_id = st.number_input("Enter the ID of the record to delete", min_value=1, step=1)
-                if st.button("Delete Record"):
+                # Let the user select a record by ID for deletion
+                selected_id = st.selectbox("Select the ID of the record to delete", result_df['id'].tolist())
+                
+                # Confirm before deletion
+                if st.button(f"Delete Record with ID {selected_id}"):
                     delete_entry(selected_id)
                     st.success(f"Record with ID {selected_id} has been deleted.")
             else:
