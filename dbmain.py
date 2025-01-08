@@ -21,46 +21,70 @@ def init_db():
 
 # Insert data into database
 def insert_data(university, duration, fee, themes, comments):
-    conn = sqlite3.connect("university_data.db")
-    cursor = conn.cursor()
-    cursor.execute(''' 
-        INSERT INTO university_data (university, duration, fee, themes, comments)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (university, duration, fee, themes, comments))
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect("university_data.db")
+        cursor = conn.cursor()
+        cursor.execute(''' 
+            INSERT INTO university_data (university, duration, fee, themes, comments)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (university, duration, fee, themes, comments))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        st.error(f"Error inserting record: {str(e)}")
+        return False
 
 # Query data from database
 def query_data(filters):
-    conn = sqlite3.connect("university_data.db")
-    query = "SELECT * FROM university_data WHERE 1=1"
+    try:
+        conn = sqlite3.connect("university_data.db")
+        query = "SELECT * FROM university_data WHERE 1=1"
 
-    # Apply filters dynamically
-    for key, value in filters.items():
-        if value:
-            if key == "themes":
-                query += f" AND {key} LIKE '%{value}%'"
-            else:
-                query += f" AND {key} = '{value}'"
+        # Apply filters dynamically
+        for key, value in filters.items():
+            if value:
+                if key == "themes":
+                    query += f" AND {key} LIKE '%{value}%'"
+                else:
+                    query += f" AND {key} = '{value}'"
 
-    df = pd.read_sql_query(query, conn)
-    conn.close()
-    return df
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        return df
+    except Exception as e:
+        st.error(f"Error querying data: {str(e)}")
+        return pd.DataFrame()  # return empty dataframe on error
 
 # Delete an entry from the database
 def delete_entry(entry_id):
-    conn = sqlite3.connect("university_data.db")
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM university_data WHERE id = ?", (entry_id,))
-    conn.commit()
-    
-    # Check if the deletion was successful
-    if cursor.rowcount == 0:
-        st.error(f"No record found with ID {entry_id}")
+    try:
+        conn = sqlite3.connect("university_data.db")
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM university_data WHERE id = ?", (entry_id,))
+        conn.commit()
+
+        # Check if the deletion was successful
+        if cursor.rowcount == 0:
+            st.error(f"No record found with ID {entry_id}")
+            conn.close()
+            return False
         conn.close()
+        return True
+    except Exception as e:
+        st.error(f"Error deleting record: {str(e)}")
         return False
-    conn.close()
-    return True
+
+# Run a custom SQL query
+def run_sql_query(query):
+    try:
+        conn = sqlite3.connect("university_data.db")
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        return df
+    except Exception as e:
+        st.error(f"Error running SQL query: {str(e)}")
+        return pd.DataFrame()  # return empty dataframe on error
 
 # Main app
 def main():
@@ -69,8 +93,9 @@ def main():
     init_db()
 
     # Tabs for data entry and interrogation
-    tab1, tab2 = st.tabs(["Add Data", "Query Data"])
+    tab1, tab2, tab3 = st.tabs(["Add Data", "Query Data", "SQL Query"])
 
+    # Add Data Tab
     with tab1:
         st.header("Add Data")
         university = st.text_input("University Name")
@@ -81,11 +106,14 @@ def main():
 
         if st.button("Add Record"):
             if university and duration and fee and themes and comments:
-                insert_data(university, duration, fee, themes, comments)
-                st.success("Record added successfully!")
+                if insert_data(university, duration, fee, themes, comments):
+                    st.success("Record added successfully!")
+                else:
+                    st.error("Failed to add record.")
             else:
                 st.error("Please fill in all fields.")
 
+    # Query Data Tab
     with tab2:
         st.header("Query Data")
         st.write("Use the filters below to search the database:")
@@ -117,6 +145,21 @@ def main():
                         st.success(f"Record with ID {selected_id} has been deleted.")
             else:
                 st.write("No records found.")
+
+    # SQL Query Tab
+    with tab3:
+        st.header("Run Custom SQL Query")
+        query = st.text_area("Enter SQL Query (e.g., SELECT * FROM university_data)")
+        
+        if st.button("Run Query"):
+            if query.strip():
+                result_df = run_sql_query(query)
+                if not result_df.empty:
+                    st.dataframe(result_df)
+                else:
+                    st.write("No data returned or error in query.")
+            else:
+                st.error("Please enter a SQL query.")
 
 if __name__ == "__main__":
     main()
