@@ -47,6 +47,14 @@ def query_data(filters):
     conn.close()
     return df
 
+# Delete an entry from the database
+def delete_entry(entry_id):
+    conn = sqlite3.connect("university_data.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM university_data WHERE id = ?", (entry_id,))
+    conn.commit()
+    conn.close()
+
 # Main app
 def main():
     st.title("University Database Interface")
@@ -91,6 +99,12 @@ def main():
             result_df = query_data(filters)
             if not result_df.empty:
                 st.dataframe(result_df)
+
+                # Allow deletion of records
+                selected_id = st.number_input("Enter the ID of the record to delete", min_value=1, step=1)
+                if st.button("Delete Record"):
+                    delete_entry(selected_id)
+                    st.success(f"Record with ID {selected_id} has been deleted.")
             else:
                 st.write("No records found.")
 
