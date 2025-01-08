@@ -75,14 +75,25 @@ def delete_entry(entry_id):
         st.error(f"Error deleting record: {str(e)}")
         return False
 
+# Run a custom SQL query
+def run_sql_query(query):
+    try:
+        conn = sqlite3.connect("university_data.db")
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        return df
+    except Exception as e:
+        st.error(f"Error running SQL query: {str(e)}")
+        return pd.DataFrame()  # return empty dataframe on error
+
 # Main app
 def main():
     st.title("University Database Interface")
 
     init_db()
 
-    # Tabs for data entry and interrogation
-    tab1, tab2 = st.tabs(["Add Data", "Query Data"])
+    # Tabs for data entry, querying data, and SQL query
+    tab1, tab2, tab3 = st.tabs(["Add Data", "Query Data", "SQL Query"])
 
     # Add Data Tab
     with tab1:
@@ -123,17 +134,23 @@ def main():
             result_df = query_data(filters)
             if not result_df.empty:
                 st.dataframe(result_df)
-
-                # Allow deletion of record directly by entering the ID
-                selected_id = st.number_input("Enter the ID of the record to delete", min_value=1, step=1)
-
-                # Automatically delete the record when the ID is provided
-                if selected_id:
-                    st.write(f"Attempting to delete record with ID: {selected_id}")
-                    if delete_entry(selected_id):
-                        st.success(f"Record with ID {selected_id} has been deleted.")
             else:
                 st.write("No records found.")
+
+    # SQL Query Tab
+    with tab3:
+        st.header("Run Custom SQL Query")
+        query = st.text_area("Enter SQL Query (e.g., SELECT * FROM university_data)")
+        
+        if st.button("Run Query"):
+            if query.strip():
+                result_df = run_sql_query(query)
+                if not result_df.empty:
+                    st.dataframe(result_df)
+                else:
+                    st.write("No data returned or error in query.")
+            else:
+                st.error("Please enter a SQL query.")
 
 if __name__ == "__main__":
     main()
