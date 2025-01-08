@@ -89,7 +89,7 @@ def main():
         duration = st.text_input("Duration")
         fee = st.text_input("Fee")
         themes = st.text_area("Themes (comma-separated)")
-        comments = st.text_area("Comments")
+        comments = st.text_area("Comments")  # Re-added comment area
 
         if st.button("Add Record"):
             if university and duration and fee and themes and comments:
