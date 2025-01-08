@@ -139,4 +139,5 @@ def main():
             else:
                 st.error("Please enter a SQL query.")
 
-if __name__ == "__ma
+if __name__ == "__main__":
+    main()
