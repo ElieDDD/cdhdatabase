@@ -87,7 +87,7 @@ def reset_auto_increment():
 
 # Main app
 def main():
-    st.title("University Database Interface")
+    st.title("Data Schools Database")
 
     init_db()
 
