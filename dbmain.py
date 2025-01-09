@@ -1,11 +1,10 @@
-import streamlit as st
-import sqlite3
-import pandas as pd
-#new
 import(‘pysqlite3’)
 import sys
 sys.modules[‘sqlite3’] = sys.modules.pop(‘pysqlite3’)
-#
+import streamlit as st
+#import sqlite3
+import pandas as pd
+
 # Initialize SQLite database
 def init_db():
     conn = sqlite3.connect("university_data.db")
