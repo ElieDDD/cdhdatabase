@@ -152,8 +152,8 @@ def main():
                 st.error("Please enter a SQL query.")
 
         # Reset Auto-Increment Counter Button
-        #if st.button("Reset Auto-Increment Counter"):
-           #reset_auto_increment()
+        if st.button("Reset Auto-Increment Counter"):
+           reset_auto_increment()
 
 if __name__ == "__main__":
     main()
