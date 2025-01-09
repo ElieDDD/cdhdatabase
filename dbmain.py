@@ -74,7 +74,7 @@ def run_sql_query(query):
         return pd.DataFrame()  # return empty dataframe on error
 
 # Reset the auto-increment counter
-def reset_auto_increment():
+'''def reset_auto_increment():
     try:
         conn = sqlite3.connect("university_data.db")
         cursor = conn.cursor()
@@ -84,7 +84,7 @@ def reset_auto_increment():
         st.success("Auto-increment counter reset successfully!")
     except Exception as e:
         st.error(f"Error resetting auto-increment counter: {str(e)}")
-
+'''
 # Main app
 def main():
     st.title("Data Schools Database")
@@ -152,8 +152,8 @@ def main():
                 st.error("Please enter a SQL query.")
 
         # Reset Auto-Increment Counter Button
-        if st.button("Reset Auto-Increment Counter"):
-            reset_auto_increment()
+        '''if st.button("Reset Auto-Increment Counter"):
+         '''   reset_auto_increment()
 
 if __name__ == "__main__":
     main()
